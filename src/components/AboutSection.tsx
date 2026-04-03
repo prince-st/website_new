@@ -1,89 +1,61 @@
 import { Button } from "@/components/ui/button";
-import { Rocket, Gauge, Boxes, BadgeInfo, TrendingUp, Users, Zap, ArrowRight, Sparkles, MessageSquare, LucideIcon } from "lucide-react";
-import { useACFPage } from "@/hooks/useWordPressData";
-
-// Map icon name strings from ACF to Lucide components
-const iconMap: Record<string, LucideIcon> = {
-  rocket: Rocket,
-  gauge: Gauge,
-  boxes: Boxes,
-  trending_up: TrendingUp,
-  trendingup: TrendingUp,
-  users: Users,
-  zap: Zap,
-};
-
-const defaultFeatures = [
-  {
-    icon: "rocket",
-    title: "AI-First Approach",
-    description: "Leveraging AI-powered workflows, automation, and intelligent systems to streamline operations, reduce manual effort, and accelerate business growth.",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    icon: "gauge",
-    title: "ROI-Focused",
-    description: "Every solution is built with a clear focus on performance, ensuring measurable impact, higher conversions, and maximum return on investment.",
-    color: "from-purple-500 to-pink-500",
-  },
-  {
-    icon: "boxes",
-    title: "End-to-End Execution",
-    description: "From strategy and UX to development, automation, and growth—complete ownership to ensure seamless execution and consistent results.",
-    color: "from-orange-500 to-red-500",
-  },
-];
-
-const defaultStats = [
-  { icon: "trendingup", value: "1,350+", label: "Projects", color: "from-blue-500 to-cyan-500" },
-  { icon: "users", value: "10+", label: "Years Experience", color: "from-purple-500 to-pink-500" },
-  { icon: "zap", value: "Trusted", label: "by Brands", color: "from-orange-500 to-red-500" },
-];
-
-const defaultIndustries = ["Retail & Ecommerce", "SaaS Platforms", "D2C", "B2B", "Startups", "Agencies", "Healthcare"];
+import { Rocket, Gauge, Boxes, BadgeInfo, TrendingUp, Users, Zap, ArrowRight, Sparkles, MessageSquare } from "lucide-react";
+import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
 export function AboutSection() {
-  // ACF data from WordPress page ID 170 (About page)
-  const { data, loading } = useACFPage(170);
+  const { data } = useWPPage(WP_PAGE_IDS.INDEX);
 
-  // ACF fields expected:
-  // section_badge (string), heading (string), paragraph_1 (textarea), paragraph_2 (textarea)
-  // industries (repeater: name) OR industries_text (textarea, newline separated)
-  // features (repeater: icon, title, description, color)
-  // stats (repeater: icon, value, label, color)
-  // cta_primary_label, cta_primary_url, cta_secondary_label, cta_secondary_url
+  // Exact ACF field names from WordPress (page 170):
+  // top_badge4, main_heading4, highlight_text4
+  // description_1, description_2
+  // tags[].tag_name  (industries)
+  // cta_primary, cta_secondary  (button labels — no URL fields in ACF for these)
+  // features[].icon (WP image), features[].title, features[].description (not in ACF yet — using cards instead)
+  // cards[].icon (WP image), cards[].title, cards[].desc  (Why Choose section but reused here)
 
-  const badge: string = data?.section_badge || "About Me";
-  const heading: string = data?.heading || "Transforming Business with Modern Digital Era";
-  const paragraph1: string = data?.paragraph_1 || "I'm Bharat Gunani, founder of StoreTransform and a digital commerce strategist with over a decade of experience helping businesses scale through technology. I specialize in bridging the gap between business goals and technical execution—leveraging AI-driven solutions to deliver real, measurable growth.";
-  const paragraph2: string = data?.paragraph_2 || "With 1,350+ successful projects delivered across global markets, I bring a results-driven approach powered by AI, data, and high-performance development. From intelligent automation to advanced digital ecosystems, my focus is not just building platforms—but creating scalable growth systems that drive revenue, efficiency, and long-term success in an AI-first world.";
+  const badge: string = data?.top_badge4 || "ABOUT ME";
+  const headingMain: string = data?.main_heading4 || "Transforming Business with";
+  const headingHighlight: string = data?.highlight_text4 || "Modern Digital Era";
+  const para1: string = data?.description_1 || "I'm Bharat Gunani, founder of StoreTransform and a digital commerce strategist with over a decade of experience helping businesses scale through technology.";
+  const para2: string = data?.description_2 || "With 1,350+ successful projects delivered across global markets, I bring a results-driven approach powered by AI, data, and high-performance development.";
+  const ctaPrimary: string = data?.cta_primary || "Hire Me on Upwork";
+  const ctaSecondary: string = data?.cta_secondary || "Let's Connect";
 
-  const ctaPrimaryLabel: string = data?.cta_primary_label || "Hire Me on Upwork";
-  const ctaPrimaryUrl: string = data?.cta_primary_url || "https://www.upwork.com/freelancers/bharatgunani";
-  const ctaSecondaryLabel: string = data?.cta_secondary_label || "Let's Connect";
-  const ctaSecondaryUrl: string = data?.cta_secondary_url || "#contact";
+  // Industries from tags[].tag_name
+  const industries: string[] =
+    Array.isArray(data?.tags) && data.tags.some((t: any) => t.tag_name)
+      ? data.tags.filter((t: any) => t.tag_name).map((t: any) => t.tag_name)
+      : ["Retail & Ecommerce", "SaaS Platforms", "D2C", "B2B", "Startups", "Agencies", "Healthcare"];
 
-  const industries: string[] = (() => {
-    if (Array.isArray(data?.industries) && data.industries.length > 0) return data.industries.map((i: any) => i.name || i);
-    if (typeof data?.industries_text === "string") return data.industries_text.split("\n").filter(Boolean);
-    return defaultIndustries;
-  })();
+  // Feature cards — ACF has features[].icon (image), features[].title, features[].description
+  // If empty, fall back to static
+  const featureIcons = [Rocket, Gauge, Boxes];
+  const featureColors = ["from-blue-500 to-cyan-500", "from-purple-500 to-pink-500", "from-orange-500 to-red-500"];
+  const defaultFeatures = [
+    { title: "AI-First Approach", description: "Leveraging AI-powered workflows, automation, and intelligent systems to streamline operations, reduce manual effort, and accelerate business growth." },
+    { title: "ROI-Focused", description: "Every solution is built with a clear focus on performance, ensuring measurable impact, higher conversions, and maximum return on investment." },
+    { title: "End-to-End Execution", description: "From strategy and UX to development, automation, and growth—complete ownership to ensure seamless execution and consistent results." },
+  ];
 
-  const rawFeatures = Array.isArray(data?.features) && data.features.length > 0 ? data.features : defaultFeatures;
-  const features = rawFeatures.map((f: any) => ({
-    icon: iconMap[f.icon?.toLowerCase()] || Rocket,
+  const rawFeatures: any[] =
+    Array.isArray(data?.features) && data.features.some((f: any) => f.title)
+      ? data.features.filter((f: any) => f.title)
+      : defaultFeatures;
+
+  const features = rawFeatures.slice(0, 3).map((f: any, i: number) => ({
+    IconComponent: featureIcons[i] || Rocket,
+    iconUrl: f.icon?.url || null,
     title: f.title,
-    description: f.description,
-    color: f.color || "from-blue-500 to-cyan-500",
+    description: f.description || f.text || "",
+    color: featureColors[i] || "from-blue-500 to-cyan-500",
   }));
 
-  const rawStats = Array.isArray(data?.stats) && data.stats.length > 0 ? data.stats : defaultStats;
-  const stats = rawStats.map((s: any) => ({
-    icon: iconMap[s.icon?.toLowerCase()] || TrendingUp,
-    value: s.value,
-    label: s.label,
-    color: s.color || "from-blue-500 to-cyan-500",
-  }));
+  // Stats — ACF has stats field but it's null; use floating_stat + hardcoded fallbacks
+  const statsData = [
+    { IconComponent: TrendingUp, value: data?.floating_stat?.value || "1,350+", label: "Projects", color: "from-blue-500 to-cyan-500" },
+    { IconComponent: Users, value: "10+", label: "Years Experience", color: "from-purple-500 to-pink-500" },
+    { IconComponent: Zap, value: "Trusted", label: "by Brands", color: "from-orange-500 to-red-500" },
+  ];
 
   return (
     <section id="about" className="py-10 sm:py-12 lg:py-16 bg-slate-100 relative overflow-hidden">
@@ -92,62 +64,44 @@ export function AboutSection() {
         <div className="absolute top-20 left-20 w-40 h-40 bg-gradient-to-br from-primary/15 to-accent/15 rounded-full blur-3xl animate-float" style={{ animationDuration: "18s" }} />
         <div className="absolute bottom-20 right-20 w-36 h-36 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl animate-float" style={{ animationDuration: "22s", animationDelay: "3s" }} />
       </div>
-      <div className="absolute inset-0 opacity-[0.02]">
-        <svg width="100%" height="100%">
-          <defs>
-            <pattern id="about-grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="20" cy="20" r="1" fill="currentColor" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#about-grid)" />
-        </svg>
-      </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
+        {/* Badge */}
         <div className="text-center mb-12 sm:mb-16 lg:mb-20">
           <div className="group relative inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-full bg-primary/10 border-2 border-primary/30 backdrop-blur-xl mb-6 sm:mb-8 shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:scale-105 hover:-translate-y-1 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-cyan-500/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-gradient" style={{ backgroundSize: "200% 200%" }} />
-            <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-cyan-500/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative flex items-center gap-3">
               <div className="relative">
                 <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
                 <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-primary animate-ping" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-primary uppercase tracking-[0.15em] sm:tracking-[0.2em] drop-shadow-[0_0_10px_rgba(20,184,166,0.5)]">
-                {badge}
-              </span>
-              <BadgeInfo className="w-4 sm:w-5 h-4 sm:h-5 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_8px_rgba(20,184,166,0.4)]" />
-            </div>
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              <span className="text-xs sm:text-sm font-bold text-primary uppercase tracking-[0.15em] sm:tracking-[0.2em]">{badge}</span>
+              <BadgeInfo className="w-4 sm:w-5 h-4 sm:h-5 text-primary group-hover:rotate-12 transition-transform" />
             </div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-start max-w-7xl mx-auto">
-          {/* Left: Content */}
+          {/* Left */}
           <div className="space-y-6 sm:space-y-8 animate-fade-in-up">
-            {/* Headline */}
+            {/* Heading */}
             <div className="relative pl-6 sm:pl-8 lg:pl-10">
               <div className="absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 bg-gradient-to-b from-primary via-cyan-400 to-primary rounded-full shadow-lg shadow-primary/50" />
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-heading font-bold leading-tight">
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: heading.replace(
-                      /(Modern Digital Era|AI-First|Growth|Transform)/gi,
-                      '<span class="relative inline-block"><span class="absolute inset-0 bg-gradient-to-r from-primary/30 to-cyan-500/30 blur-2xl animate-pulse" style="animation-duration:3s"></span><span class="relative bg-gradient-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent animate-gradient" style="background-size:200% auto">$1</span></span>'
-                    ),
-                  }}
-                />
+                {headingMain}{" "}
+                <span className="relative inline-block">
+                  <span className="absolute inset-0 bg-gradient-to-r from-primary/30 to-cyan-500/30 blur-2xl animate-pulse" style={{ animationDuration: "3s" }} />
+                  <span className="relative bg-gradient-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent">
+                    {headingHighlight}
+                  </span>
+                </span>
               </h2>
             </div>
 
             {/* Paragraphs */}
             <div className="space-y-6">
-              {[paragraph1, paragraph2].map((para, i) => (
+              {[para1, para2].map((para, i) => (
                 <div key={i} className="group relative p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-card to-card/50 border-2 border-border/50 backdrop-blur-sm hover:border-primary/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
-                  <div className={`absolute ${i === 0 ? "top-0 left-0" : "bottom-0 right-0"} w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 bg-gradient-to-${i === 0 ? "br from-primary/10" : "tl from-cyan-500/10"} to-transparent rounded-${i === 0 ? "br" : "tl"}-[100px]`} />
                   <p className="text-muted-foreground leading-relaxed relative z-10 text-base sm:text-lg">{para}</p>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
@@ -163,13 +117,10 @@ export function AboutSection() {
               <div className="flex flex-wrap gap-3">
                 {industries.map((label, idx) => (
                   <span
-                    key={label}
-                    className="group relative px-4 sm:px-5 lg:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-card border-2 border-border/50 text-sm font-bold text-foreground hover:border-primary/50 hover:text-primary transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-xl cursor-default overflow-hidden"
-                    style={{ animationDelay: `${idx * 50}ms` }}
+                    key={idx}
+                    className="group relative px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-card border-2 border-border/50 text-sm font-bold text-foreground hover:border-primary/50 hover:text-primary transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-xl cursor-default overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary/50 group-hover:bg-primary group-hover:shadow-[0_0_8px_hsl(var(--primary))] transition-all" />
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <span className="relative z-10">{label}</span>
                   </span>
                 ))}
@@ -179,18 +130,15 @@ export function AboutSection() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
               <Button className="h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base shadow-2xl hover:shadow-primary/50 group relative overflow-hidden" asChild>
-                <a href={ctaPrimaryUrl} target="_blank" rel="noopener noreferrer">
-                  <span className="relative z-10">{ctaPrimaryLabel}</span>
+                <a href="https://www.upwork.com/freelancers/bharatgunani" target="_blank" rel="noopener noreferrer">
+                  <span className="relative z-10">{ctaPrimary}</span>
                   <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform relative z-10" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-cyan-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
                 </a>
               </Button>
               <Button variant="outline" className="group relative h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base border-2 border-border hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden shadow-lg hover:shadow-xl" asChild>
-                <a href={ctaSecondaryUrl} className="flex items-center gap-2">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <MessageSquare className="relative w-5 h-5 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]" />
-                  <span className="relative z-10 group-hover:text-primary transition-colors">{ctaSecondaryLabel}</span>
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <a href="#contact" className="flex items-center gap-2">
+                  <MessageSquare className="relative w-5 h-5 text-primary group-hover:rotate-12 transition-transform" />
+                  <span className="relative z-10 group-hover:text-primary transition-colors">{ctaSecondary}</span>
                 </a>
               </Button>
             </div>
@@ -199,27 +147,24 @@ export function AboutSection() {
           {/* Right: Features & Stats */}
           <div className="space-y-6 sm:space-y-8 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
             {features.map((f, idx) => (
-              <div key={f.title} className="group relative" style={{ animationDelay: `${idx * 150}ms` }}>
+              <div key={idx} className="group relative">
                 <div className="relative p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border-2 border-border hover:border-primary/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
                   <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
                   <div className="flex items-start gap-4 sm:gap-6 relative z-10">
                     <div className="relative flex-shrink-0">
                       <div className={`absolute inset-0 bg-gradient-to-br ${f.color} rounded-xl sm:rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
-                      <div className={`relative w-16 sm:w-20 h-16 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-2xl`}>
-                        <f.icon className="w-8 sm:w-10 h-8 sm:h-10 text-white drop-shadow-lg" />
-                      </div>
-                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "6s" }}>
-                        <div className="absolute top-0 left-1/2 w-1.5 sm:w-2 h-1.5 sm:h-2 bg-primary rounded-full -translate-x-1/2 shadow-lg shadow-primary/50" />
+                      <div className={`relative w-16 sm:w-20 h-16 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-2xl overflow-hidden`}>
+                        {f.iconUrl ? (
+                          <img src={f.iconUrl} alt={f.title} className="w-8 sm:w-10 h-8 sm:h-10 object-contain" />
+                        ) : (
+                          <f.IconComponent className="w-8 sm:w-10 h-8 sm:h-10 text-white drop-shadow-lg" />
+                        )}
                       </div>
                     </div>
                     <div className="flex-1 pt-1 sm:pt-2">
                       <h4 className="font-heading text-xl sm:text-2xl font-bold mb-2 sm:mb-3 group-hover:text-primary transition-colors">{f.title}</h4>
                       <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{f.description}</p>
                     </div>
-                  </div>
-                  <div className="absolute top-3 right-3 w-12 h-12 border-t-2 border-r-2 border-primary/20 rounded-tr-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full animate-pulse" />
                   </div>
                 </div>
                 <div className={`absolute -inset-1 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-500 rounded-3xl -z-10`} />
@@ -228,18 +173,15 @@ export function AboutSection() {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-5 pt-6 sm:pt-8">
-              {stats.map((stat, idx) => (
-                <div key={stat.label} className="group relative" style={{ animationDelay: `${idx * 100}ms` }}>
+              {statsData.map((stat, idx) => (
+                <div key={idx} className="group relative">
                   <div className="relative p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-card to-secondary/30 border-2 border-border hover:border-primary/30 transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl text-center overflow-hidden">
-                    <div className="absolute -top-8 -right-8 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
-                      <stat.icon className="w-32 h-32" />
-                    </div>
                     <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
                     <div className="relative z-10 space-y-2 sm:space-y-3">
                       <div className="relative mx-auto w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16">
                         <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} rounded-xl sm:rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity`} />
                         <div className={`relative w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 mx-auto rounded-xl sm:rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-xl`}>
-                          <stat.icon className="w-6 sm:w-7 lg:w-8 h-6 sm:h-7 lg:h-8 text-white" />
+                          <stat.IconComponent className="w-6 sm:w-7 lg:w-8 h-6 sm:h-7 lg:h-8 text-white" />
                         </div>
                       </div>
                       <div className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 inline-block">
