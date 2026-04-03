@@ -2,35 +2,36 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Sparkles } from "lucide-react";
-import { useACFPage } from "@/hooks/useWordPressData";
-
-// Fallback static nav links
-const defaultNavLinks = [
-  { name: "About", href: "/about" },
-  { name: "Services", href: "/services" },
-  { name: "Process", href: "/process" },
-  { name: "Contact", href: "/contact" },
-];
+import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { data } = useWPPage(WP_PAGE_IDS.HEADER);
 
-  // ACF data from WordPress page ID 32 (Header)
-  const { data } = useACFPage(32);
+  // Exact ACF field names from WordPress:
+  // data.logo.logo_short, data.logo.logo_full
+  // data.menu_items[].label, data.menu_items[].link
+  // data.cta_button.text, data.cta_button.link
 
-  // ACF fields expected: logo_text, logo_initials, logo_image (url), cta_label, cta_url, nav_links (repeater: label, url)
-  const logoText: string = data?.logo_text || "Bharat";
-  const logoInitials: string = data?.logo_initials || "BG";
-  const logoImage: string = data?.logo_image?.url || data?.logo_image || "/ai-animation.gif";
-  const ctaLabel: string = data?.cta_label || "Let's Talk";
-  const ctaUrl: string = data?.cta_url || "/contact";
+  const logoShort: string = data?.logo?.logo_short || "BG";
+  const logoFull: string = data?.logo?.logo_full || "Bharat";
+  const ctaText: string = data?.cta_button?.text || "Let's Talk";
+  const ctaLink: string = data?.cta_button?.link?.replace("http://localhost:8080", "") || "/contact";
 
   const navLinks: { name: string; href: string }[] =
-    Array.isArray(data?.nav_links) && data.nav_links.length > 0
-      ? data.nav_links.map((item: any) => ({ name: item.label, href: item.url }))
-      : defaultNavLinks;
+    Array.isArray(data?.menu_items) && data.menu_items.length > 0
+      ? data.menu_items.map((item: any) => ({
+          name: item.label,
+          href: item.link?.replace("http://localhost:8080", "") || "/",
+        }))
+      : [
+          { name: "About", href: "/about" },
+          { name: "Services", href: "/services" },
+          { name: "Process", href: "/process" },
+          { name: "Contact", href: "/contact" },
+        ];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -46,11 +47,8 @@ export function Header() {
           : "bg-background/80 backdrop-blur-md"
       }`}
     >
-      {/* Animated Gradient Line */}
       <div className={`absolute bottom-0 left-0 right-0 h-[2px] transition-opacity duration-500 ${isScrolled ? "opacity-100" : "opacity-0"}`}>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary to-transparent animate-gradient" style={{ backgroundSize: "200% 100%" }}>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary to-transparent blur-sm" />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary to-transparent animate-gradient" style={{ backgroundSize: "200% 100%" }} />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,7 +56,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="group flex items-center gap-2 sm:gap-3">
             <div className="relative w-10 sm:w-12 h-10 sm:h-12">
-              <img src={logoImage} alt="Logo Animation" className="absolute inset-0 w-full h-full object-cover rounded-lg sm:rounded-xl" />
+              <img src="/ai-animation.gif" alt="Logo" className="absolute inset-0 w-full h-full object-cover rounded-lg sm:rounded-xl" />
               <div className="absolute inset-0 w-full h-full rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/90 to-cyan-500/90 flex items-center justify-center shadow-xl group-hover:shadow-[0_0_30px_hsl(var(--primary)/0.6)] transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 overflow-hidden backdrop-blur-sm">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -66,18 +64,18 @@ export function Header() {
                     <div className="absolute top-1 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 shadow-[0_0_6px_white]" />
                   </div>
                 </div>
-                <span className="relative text-white font-heading font-bold text-xl sm:text-2xl drop-shadow-lg">{logoInitials}</span>
+                <span className="relative text-white font-heading font-bold text-xl sm:text-2xl drop-shadow-lg">{logoShort}</span>
               </div>
             </div>
             <div className="hidden sm:block">
               <span className="font-heading font-bold text-lg sm:text-xl bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-cyan-400 transition-all duration-300">
-                {logoText}
+                {logoFull}
               </span>
               <div className="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-primary to-cyan-400 transition-all duration-300" />
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
@@ -99,24 +97,24 @@ export function Header() {
             ))}
           </nav>
 
-          {/* CTA Button */}
+          {/* CTA */}
           <div className="hidden lg:block">
             <Button variant="hero" size="default" asChild className="group relative overflow-hidden shadow-2xl hover:shadow-[0_0_40px_hsl(var(--primary)/0.6)] transition-all duration-500 hover:scale-105">
-              <Link to={ctaUrl} className="flex items-center gap-2">
+              <Link to={ctaLink} className="flex items-center gap-2">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary via-cyan-400 to-primary opacity-0 group-hover:opacity-60 blur-xl transition-opacity duration-500 -z-10" />
                 <Sparkles className="relative w-4 h-4 group-hover:rotate-12 transition-transform drop-shadow-lg" />
-                <span className="relative z-10 font-bold">{ctaLabel}</span>
+                <span className="relative z-10 font-bold">{ctaText}</span>
               </Link>
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile toggle */}
           <button className="lg:hidden relative p-2 rounded-xl text-foreground hover:bg-primary/10 transition-all duration-300" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Nav */}
         {isMobileMenuOpen && (
           <nav className="lg:hidden py-6 border-t-2 border-border/50 animate-fade-in">
             <div className="flex flex-col gap-3">
@@ -137,9 +135,9 @@ export function Header() {
                 </Link>
               ))}
               <Button variant="hero" size="default" className="mt-4 group relative overflow-hidden shadow-2xl" asChild>
-                <Link to={ctaUrl} className="flex items-center justify-center gap-2">
+                <Link to={ctaLink} className="flex items-center justify-center gap-2">
                   <Sparkles className="relative w-4 h-4 group-hover:rotate-12 transition-transform drop-shadow-lg" />
-                  <span className="relative z-10 font-bold">{ctaLabel}</span>
+                  <span className="relative z-10 font-bold">{ctaText}</span>
                 </Link>
               </Button>
             </div>

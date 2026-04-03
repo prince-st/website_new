@@ -2,27 +2,21 @@ import { useEffect, useState } from "react";
 
 export const WP_BASE = "https://dev-reactwebsite.pantheonsite.io/wp-json";
 
-// WordPress Page IDs
 export const WP_PAGE_IDS = {
-  ABOUT: 170,
+  INDEX: 170,   // All index page sections (hero, about, services, process, tech, upwork, why, cta)
   HEADER: 32,
   FOOTER: 35,
 };
 
-export async function fetchACFPage(pageId: number) {
-  const res = await fetch(`${WP_BASE}/acf/v3/pages/${pageId}`);
-  if (!res.ok) throw new Error(`Failed to fetch ACF page ${pageId}`);
-  return res.json();
-}
-
-export function useACFPage(pageId: number) {
+export function useWPPage(pageId: number) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchACFPage(pageId)
-      .then((json) => setData(json?.acf ?? json))
+    fetch(`${WP_BASE}/wp/v2/pages/${pageId}?acf_format=standard&_fields=acf`)
+      .then((r) => r.json())
+      .then((json) => setData(json?.acf ?? null))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [pageId]);
