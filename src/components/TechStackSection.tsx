@@ -1,39 +1,36 @@
 import { Code2 } from "lucide-react";
-import { useACFPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
-
-const defaultTechCategories = [
-  { title: "AI & Automation", tools: ["n8n", "Make", "Agentic RAG", "ChatGPT", "Claude", "AI", "Gemini", "LangChain", "OpenAI API", "Business Process Automation"] },
-  { title: "CMS & eCommerce", tools: ["Shopify", "Shopify Plus", "Magento 2", "WordPress", "WooCommerce", "Headless Commerce"] },
-  { title: "Development", tools: ["Node.js", "Python", "PHP 8.x", "React", "Next.js", "REST APIs", "GraphQL", "Tailwind CSS"] },
-  { title: "Databases & Infrastructure", tools: ["MySQL", "PostgreSQL", "MongoDB", "Redis", "AWS", "Google Cloud", "Docker", "Supabase"] },
-  { title: "Marketing & Analytics", tools: ["Google Analytics", "Google Search Console", "Google Tag Manager", "Bing Webmaster", "SEMrush", "Ahrefs", "Google Ads", "Meta Ads", "Social Media Platforms"] },
-  { title: "Integrations & APIs", tools: ["Zapier", "REST APIs", "Webhooks", "Stripe", "PayPal", "ERP Integrations", "CRM Integrations"] },
-  { title: "Collaboration", tools: ["Slack", "Notion", "Jira", "GitHub", "Trello"] },
-  { title: "Cloud & Infrastructure", tools: ["AWS", "Azure", "Google Cloud", "Vercel", "Netlify"] },
-  { title: "Design & Prototyping", tools: ["Figma", "Adobe XD", "Photoshop", "Illustrator", "Canva"] },
-];
+import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
 export function TechStackSection() {
-  // ACF fields expected:
-  // tech_badge, tech_heading, tech_subheading
-  // tech_categories (repeater: title, tools_text (newline separated) OR tools (repeater: name))
-  const { data } = useACFPage(WP_PAGE_IDS.ABOUT);
+  const { data } = useWPPage(WP_PAGE_IDS.INDEX);
 
-  const badge: string = data?.tech_badge || "Tech Stack";
-  const heading: string = data?.tech_heading || "Tools & Technologies I Master";
-  const subheading: string = data?.tech_subheading || "Leveraging the best-in-class tools to deliver exceptional results.";
+  // Exact ACF field names from WordPress (page 170):
+  // top_badge2, main_heading2, highlight_text2
+  // categories[].title, categories[].items[].name, categories[].items[].style
 
-  const techCategories = (() => {
-    if (!Array.isArray(data?.tech_categories) || data.tech_categories.length === 0) return defaultTechCategories;
-    return data.tech_categories.map((cat: any) => ({
-      title: cat.title,
-      tools: Array.isArray(cat.tools)
-        ? cat.tools.map((t: any) => t.name || t)
-        : typeof cat.tools_text === "string"
-        ? cat.tools_text.split("\n").filter(Boolean)
-        : [],
-    }));
-  })();
+  const badge: string = data?.top_badge2 || "TECH STACK";
+  const headingMain: string = data?.main_heading2 || "Tools & Technologies I";
+  const headingHighlight: string = data?.highlight_text2 || "Master";
+
+  const rawCategories = Array.isArray(data?.categories) && data.categories.length > 0
+    ? data.categories.filter((c: any) => c.title && Array.isArray(c.items) && c.items.length > 0)
+    : null;
+
+  const techCategories = rawCategories
+    ? rawCategories.map((cat: any) => ({
+        title: cat.title?.trim(),
+        items: cat.items.map((item: any) => ({ name: item.name, style: item.style })),
+      }))
+    : [
+        { title: "AI & Automation", items: [{ name: "n8n", style: "secondary" }, { name: "Make", style: "primary" }, { name: "ChatGPT", style: "primary" }, { name: "Claude", style: "secondary" }, { name: "LangChain", style: "primary" }, { name: "OpenAI API", style: "secondary" }] },
+        { title: "CMS & eCommerce", items: [{ name: "Shopify", style: "secondary" }, { name: "Shopify Plus", style: "primary" }, { name: "Magento 2", style: "secondary" }, { name: "WordPress", style: "primary" }, { name: "WooCommerce", style: "secondary" }] },
+        { title: "Development", items: [{ name: "Node.js", style: "secondary" }, { name: "Python", style: "primary" }, { name: "React", style: "primary" }, { name: "Next.js", style: "secondary" }, { name: "GraphQL", style: "secondary" }, { name: "Tailwind CSS", style: "primary" }] },
+        { title: "Databases & Infrastructure", items: [{ name: "MySQL", style: "secondary" }, { name: "PostgreSQL", style: "primary" }, { name: "MongoDB", style: "secondary" }, { name: "Redis", style: "primary" }, { name: "Docker", style: "secondary" }] },
+        { title: "Marketing & Analytics", items: [{ name: "Google Analytics", style: "secondary" }, { name: "SEMrush", style: "secondary" }, { name: "Ahrefs", style: "primary" }, { name: "Google Ads", style: "secondary" }, { name: "Meta Ads", style: "primary" }] },
+        { title: "Design & Prototyping", items: [{ name: "Figma", style: "secondary" }, { name: "Adobe XD", style: "primary" }, { name: "Photoshop", style: "secondary" }, { name: "Canva", style: "secondary" }] },
+      ];
+
+
   return (
     <section className="py-10 sm:py-12 lg:py-16 bg-slate-100 relative overflow-hidden">
       {/* Advanced 3D Background - Same as Process Section */}
@@ -85,15 +82,15 @@ export function TechStackSection() {
           </div>
 
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 text-black">
-            {heading.split(" ").slice(0, -1).join(" ")}{" "}
+            {headingMain}{" "}
             <span className="relative inline-block">
               <span className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/30 blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
               <span className="relative bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient" style={{ backgroundSize: '200% auto' }}>
-                {heading.split(" ").slice(-1)[0]}
+                {headingHighlight}
               </span>
             </span>
           </h2>
-          <p className="text-base sm:text-lg text-black font-medium">{subheading}</p>
+          <p className="text-base sm:text-lg text-black font-medium">Leveraging the best-in-class tools to deliver exceptional results.</p>
         </div>
 
         {/* Enhanced Tech Grid */}
@@ -115,16 +112,16 @@ export function TechStackSection() {
                   {category.title}
                 </h3>
                 <div className="relative flex flex-wrap gap-2">
-                  {category.tools.map((tool, idx) => (
+                  {category.items.map((item: { name: string; style: string }, idx: number) => (
                     <span
-                      key={tool}
+                      key={item.name}
                       className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold border hover:scale-110 hover:shadow-lg transition-all duration-300 cursor-default
-                        ${idx % 2 === 0
-                          ? "bg-gray-100 border-gray-400 text-gray-900 hover:bg-gray-200"
-                          : "bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100"
+                        ${item.style === "primary"
+                          ? "bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100"
+                          : "bg-gray-100 border-gray-400 text-gray-900 hover:bg-gray-200"
                         }`}
                     >
-                      {tool}
+                      {item.name}
                     </span>
                   ))}
                 </div>
