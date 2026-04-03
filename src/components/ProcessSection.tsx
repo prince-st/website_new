@@ -1,32 +1,16 @@
 import { useState } from "react";
 import { Search, FileText, Palette, Bot, TestTube, Rocket, Workflow } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
-const steps = [
-  {
-    icon: Search,
-    number: "01",
-    title: "Discuss with the client.",
-    description: "We start with a deep-dive conversation — virtual or in-person — to understand your vision, pain points, and what success looks like for your business.",
-  },
-  {
-    icon: FileText,
-    number: "02",
-    title: "Business Operations Understanding",
-    description: "Before building anything, I map your current workflows, tech stack, and operational gaps to identify exactly where technology can create the biggest impact.",
-  },
-  {
-    icon: Palette,
-    number: "03",
-    title: "Strategy & Roadmap",
-    description: "A clear, prioritised plan is defined — covering objectives, timelines, tech choices, and the AI or automation opportunities specific to your business.",
-  },
-  {
-    icon: Bot,
-    number: "04",
-    title: "Planning & Wireframing",
-    description: "Detailed wireframes, technical specifications, and architecture blueprints are prepared so every stakeholder is aligned before a single line of code is written.",
-  },
+// Fallback icons by index
+const stepIcons = [Search, FileText, Palette, Bot, TestTube, Rocket];
+
+const defaultSteps = [
+  { icon: Search, number: "01", title: "Discuss with the client.", description: "We start with a deep-dive conversation — virtual or in-person — to understand your vision, pain points, and what success looks like for your business." },
+  { icon: FileText, number: "02", title: "Business Operations Understanding", description: "Before building anything, I map your current workflows, tech stack, and operational gaps to identify exactly where technology can create the biggest impact." },
+  { icon: Palette, number: "03", title: "Strategy & Roadmap", description: "A clear, prioritised plan is defined — covering objectives, timelines, tech choices, and the AI or automation opportunities specific to your business." },
+  { icon: Bot, number: "04", title: "Planning & Wireframing", description: "Detailed wireframes, technical specifications, and architecture blueprints are prepared so every stakeholder is aligned before a single line of code is written." },
   {
     icon: TestTube,
     number: "05",
