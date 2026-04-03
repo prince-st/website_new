@@ -1,45 +1,39 @@
 import { Code2 } from "lucide-react";
+import { useACFPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
-const techCategories = [
-  {
-    title: "AI & Automation",
-    tools: ["n8n", "Make", "Agentic RAG", "ChatGPT", "Claude", "AI", "Gemini", "LangChain", "OpenAI API", "Business Process Automation"],
-  },
-  {
-    title: "CMS & eCommerce",
-    tools: ["Shopify", "Shopify Plus", "Magento 2", "WordPress", "WooCommerce", "Headless Commerce"],
-  },
-  {
-    title: "Development",
-    tools: ["Node.js", "Python", "PHP 8.x", "React", "Next.js", "REST APIs", "GraphQL", "Tailwind CSS"],
-  },
-  {
-    title: "Databases & Infrastructure",
-    tools: ["MySQL", "PostgreSQL", "MongoDB", "Redis", "AWS", "Google Cloud", "Docker", "Supabase"],
-  },
-  {
-    title: "Marketing & Analytics",
-    tools: ["Google Analytics", "Google Search Console", "Google Tag Manager", "Bing Webmaster", "SEMrush", "Ahrefs", "Google Ads", "Meta Ads", "Social Media Platforms"],
-  },
-  {
-    title: "Integrations & APIs",
-    tools: ["Zapier", "REST APIs", "Webhooks", "Stripe", "PayPal", "ERP Integrations", "CRM Integrations"],
-  },
-  {
-    title: "Collaboration",
-    tools: ["Slack", "Notion", "Jira", "GitHub", "Trello"],
-  },
-  {
-    title: "Cloud & Infrastructure",
-    tools: ["AWS", "Azure", "Google Cloud", "Vercel", "Netlify"],
-  },
-  {
-    title: "Design & Prototyping",
-    tools: ["Figma", "Adobe XD", "Photoshop", "Illustrator", "Canva"],
-  },
+const defaultTechCategories = [
+  { title: "AI & Automation", tools: ["n8n", "Make", "Agentic RAG", "ChatGPT", "Claude", "AI", "Gemini", "LangChain", "OpenAI API", "Business Process Automation"] },
+  { title: "CMS & eCommerce", tools: ["Shopify", "Shopify Plus", "Magento 2", "WordPress", "WooCommerce", "Headless Commerce"] },
+  { title: "Development", tools: ["Node.js", "Python", "PHP 8.x", "React", "Next.js", "REST APIs", "GraphQL", "Tailwind CSS"] },
+  { title: "Databases & Infrastructure", tools: ["MySQL", "PostgreSQL", "MongoDB", "Redis", "AWS", "Google Cloud", "Docker", "Supabase"] },
+  { title: "Marketing & Analytics", tools: ["Google Analytics", "Google Search Console", "Google Tag Manager", "Bing Webmaster", "SEMrush", "Ahrefs", "Google Ads", "Meta Ads", "Social Media Platforms"] },
+  { title: "Integrations & APIs", tools: ["Zapier", "REST APIs", "Webhooks", "Stripe", "PayPal", "ERP Integrations", "CRM Integrations"] },
+  { title: "Collaboration", tools: ["Slack", "Notion", "Jira", "GitHub", "Trello"] },
+  { title: "Cloud & Infrastructure", tools: ["AWS", "Azure", "Google Cloud", "Vercel", "Netlify"] },
+  { title: "Design & Prototyping", tools: ["Figma", "Adobe XD", "Photoshop", "Illustrator", "Canva"] },
 ];
 
 export function TechStackSection() {
+  // ACF fields expected:
+  // tech_badge, tech_heading, tech_subheading
+  // tech_categories (repeater: title, tools_text (newline separated) OR tools (repeater: name))
+  const { data } = useACFPage(WP_PAGE_IDS.ABOUT);
+
+  const badge: string = data?.tech_badge || "Tech Stack";
+  const heading: string = data?.tech_heading || "Tools & Technologies I Master";
+  const subheading: string = data?.tech_subheading || "Leveraging the best-in-class tools to deliver exceptional results.";
+
+  const techCategories = (() => {
+    if (!Array.isArray(data?.tech_categories) || data.tech_categories.length === 0) return defaultTechCategories;
+    return data.tech_categories.map((cat: any) => ({
+      title: cat.title,
+      tools: Array.isArray(cat.tools)
+        ? cat.tools.map((t: any) => t.name || t)
+        : typeof cat.tools_text === "string"
+        ? cat.tools_text.split("\n").filter(Boolean)
+        : [],
+    }));
+  })();
   return (
     <section className="py-10 sm:py-12 lg:py-16 bg-slate-100 relative overflow-hidden">
       {/* Advanced 3D Background - Same as Process Section */}
@@ -80,7 +74,7 @@ export function TechStackSection() {
             <div className="relative flex items-center gap-3">
               <Code2 className="w-5 h-5 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_8px_rgba(20,184,166,0.4)]" />
               <span className="text-sm font-bold text-primary uppercase tracking-[0.2em] drop-shadow-[0_0_10px_rgba(20,184,166,0.5)]">
-                Tech Stack
+                {badge}
               </span>
             </div>
 
@@ -91,17 +85,15 @@ export function TechStackSection() {
           </div>
 
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 text-black">
-            Tools & Technologies I{" "}
+            {heading.split(" ").slice(0, -1).join(" ")}{" "}
             <span className="relative inline-block">
               <span className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/30 blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
               <span className="relative bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient" style={{ backgroundSize: '200% auto' }}>
-                Master
+                {heading.split(" ").slice(-1)[0]}
               </span>
             </span>
           </h2>
-          <p className="text-base sm:text-lg text-black font-medium">
-            Leveraging the best-in-class tools to deliver exceptional results.
-          </p>
+          <p className="text-base sm:text-lg text-black font-medium">{subheading}</p>
         </div>
 
         {/* Enhanced Tech Grid */}

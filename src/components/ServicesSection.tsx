@@ -1,95 +1,51 @@
 import { Button } from "@/components/ui/button";
 import {
-  Monitor,
-  Bot,
-  Sparkles,
-  Globe,
-  ShoppingCart,
-  Database,
-  Search,
-  Target,
-  Share2,
-  Code2,
-  Smartphone,
-  Palette,
+  Monitor, Bot, Sparkles, Globe, ShoppingCart, Database,
+  Search, Target, Share2, Code2, Smartphone, Palette, LucideIcon,
 } from "lucide-react";
+import { useACFPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
-const services = [
-  {
-    icon: Monitor,
-    title: "IT Consultation",
-    description: "Scalable tech architecture and system planning for growth",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    icon: Bot,
-    title: "AI Consultant",
-    description: "Custom AI solutions, automation, and smart integrations",
-    color: "from-purple-500 to-pink-500",
-  },
-  {
-    icon: Sparkles,
-    title: "AI-Powered Services",
-    description: "Chatbots, workflows, and predictive insights",
-    color: "from-amber-500 to-orange-500",
-  },
-  {
-    icon: Globe,
-    title: "WordPress Development",
-    description: "Custom themes, performance optimization & security",
-    color: "from-blue-600 to-indigo-600",
-  },
-  {
-    icon: ShoppingCart,
-    title: "Shopify Development",
-    description: "Conversion-focused eCommerce store solutions",
-    color: "from-green-500 to-emerald-500",
-  },
-  {
-    icon: Database,
-    title: "Magento Development",
-    description: "Enterprise-grade eCommerce platforms",
-    color: "from-orange-500 to-red-500",
-  },
-  {
-    icon: Search,
-    title: "SEO",
-    description: "Technical SEO, on-page & content optimization",
-    color: "from-teal-500 to-cyan-500",
-  },
-  {
-    icon: Target,
-    title: "PPC Advertising",
-    description: "Google Ads & paid growth campaign management",
-    color: "from-red-500 to-pink-500",
-  },
-  {
-    icon: Share2,
-    title: "Social Media Marketing",
-    description: "Brand growth & engagement strategy",
-    color: "from-pink-500 to-purple-500",
-  },
-  {
-    icon: Code2,
-    title: "Vibe Coding",
-    description: "Rapid prototyping & modern coding workflows",
-    color: "from-violet-500 to-purple-500",
-  },
-  {
-    icon: Smartphone,
-    title: "App Development",
-    description: "Web & mobile applications built to scale",
-    color: "from-cyan-500 to-blue-500",
-  },
-  {
-    icon: Palette,
-    title: "UI/UX Design",
-    description: "User-centric, conversion-optimized design",
-    color: "from-fuchsia-500 to-pink-500",
-  },
+const iconMap: Record<string, LucideIcon> = {
+  monitor: Monitor, bot: Bot, sparkles: Sparkles, globe: Globe,
+  shoppingcart: ShoppingCart, shopping_cart: ShoppingCart,
+  database: Database, search: Search, target: Target,
+  share2: Share2, code2: Code2, smartphone: Smartphone, palette: Palette,
+};
+
+const defaultServices = [
+  { icon: "monitor", title: "IT Consultation", description: "Scalable tech architecture and system planning for growth", color: "from-blue-500 to-cyan-500" },
+  { icon: "bot", title: "AI Consultant", description: "Custom AI solutions, automation, and smart integrations", color: "from-purple-500 to-pink-500" },
+  { icon: "sparkles", title: "AI-Powered Services", description: "Chatbots, workflows, and predictive insights", color: "from-amber-500 to-orange-500" },
+  { icon: "globe", title: "WordPress Development", description: "Custom themes, performance optimization & security", color: "from-blue-600 to-indigo-600" },
+  { icon: "shoppingcart", title: "Shopify Development", description: "Conversion-focused eCommerce store solutions", color: "from-green-500 to-emerald-500" },
+  { icon: "database", title: "Magento Development", description: "Enterprise-grade eCommerce platforms", color: "from-orange-500 to-red-500" },
+  { icon: "search", title: "SEO", description: "Technical SEO, on-page & content optimization", color: "from-teal-500 to-cyan-500" },
+  { icon: "target", title: "PPC Advertising", description: "Google Ads & paid growth campaign management", color: "from-red-500 to-pink-500" },
+  { icon: "share2", title: "Social Media Marketing", description: "Brand growth & engagement strategy", color: "from-pink-500 to-purple-500" },
+  { icon: "code2", title: "Vibe Coding", description: "Rapid prototyping & modern coding workflows", color: "from-violet-500 to-purple-500" },
+  { icon: "smartphone", title: "App Development", description: "Web & mobile applications built to scale", color: "from-cyan-500 to-blue-500" },
+  { icon: "palette", title: "UI/UX Design", description: "User-centric, conversion-optimized design", color: "from-fuchsia-500 to-pink-500" },
 ];
 
 export function ServicesSection() {
+  // ACF fields expected:
+  // section_badge, heading, subheading, cta_label, cta_url
+  // services (repeater: icon, title, description, color)
+  const { data } = useACFPage(WP_PAGE_IDS.ABOUT);
+
+  const badge: string = data?.services_badge || "Services";
+  const heading: string = data?.services_heading || "Comprehensive Digital Solutions";
+  const subheading: string = data?.services_subheading || "From strategy to execution, I deliver end-to-end services that drive real business results.";
+  const ctaLabel: string = data?.services_cta_label || "Let's Connect";
+  const ctaUrl: string = data?.services_cta_url || "#contact";
+
+  const rawServices = Array.isArray(data?.services) && data.services.length > 0 ? data.services : defaultServices;
+  const services = rawServices.map((s: any) => ({
+    icon: iconMap[s.icon?.toLowerCase()?.replace(/[^a-z]/g, "")] || Monitor,
+    title: s.title,
+    description: s.description,
+    color: s.color || "from-blue-500 to-cyan-500",
+  }));
   return (
     <section id="services" className="py-10 sm:py-12 lg:py-16 bg-white relative overflow-hidden">
       
@@ -134,7 +90,7 @@ export function ServicesSection() {
                 <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-primary animate-ping" />
               </div>
               <span className="text-sm font-bold text-primary uppercase tracking-[0.2em] drop-shadow-[0_0_10px_rgba(20,184,166,0.5)]">
-                Services
+                {badge}
               </span>
             </div>
 
@@ -145,11 +101,11 @@ export function ServicesSection() {
           </div>
           
           <h2 className="font-heading text-4xl lg:text-5xl xl:text-6xl font-bold mb-6">
-            Comprehensive Digital{" "}
+            {heading.split(" ").slice(0, -1).join(" ")}{" "}
             <span className="relative inline-block">
               <span className="absolute inset-0 bg-gradient-to-r from-primary/20 to-cyan-500/20 blur-2xl" />
               <span className="relative bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
-                Solutions
+                {heading.split(" ").slice(-1)[0]}
               </span>
             </span>
           </h2>
@@ -157,9 +113,7 @@ export function ServicesSection() {
           <div className="relative inline-block">
             <div className="absolute -left-8 top-1/2 w-6 h-0.5 bg-gradient-to-r from-transparent to-primary/50" />
             <div className="absolute -right-8 top-1/2 w-6 h-0.5 bg-gradient-to-l from-transparent to-primary/50" />
-            <p className="text-lg text-muted-foreground px-8">
-              From strategy to execution, I deliver end-to-end services that drive real business results.
-            </p>
+            <p className="text-lg text-muted-foreground px-8">{subheading}</p>
           </div>
         </div>
 
@@ -222,8 +176,8 @@ export function ServicesSection() {
               asChild
               className="shadow-2xl hover:shadow-primary/50 group"
             >
-              <a href="#contact" className="relative">
-                <span className="relative z-10">Let's Connect</span>
+              <a href={ctaUrl} className="relative">
+                <span className="relative z-10">{ctaLabel}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary via-cyan-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
               </a>
             </Button>

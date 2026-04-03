@@ -1,13 +1,46 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, Award, Clock, Sparkles, Briefcase } from "lucide-react";
+import { ArrowRight, Star, Award, Clock, Sparkles, LucideIcon } from "lucide-react";
+import { useACFPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
-const trustBadges = [
+const iconMap: Record<string, LucideIcon> = {
+  star: Star,
+  award: Award,
+  clock: Clock,
+};
+
+const defaultBadges = [
   { icon: Star, label: "Top Rated", value: "on Upwork" },
   { icon: Award, label: "10+ Years", value: "Experience" },
   { icon: Clock, label: "100% Client", value: "Satisfaction" },
 ];
 
 export function HeroSection() {
+  // ACF fields expected (on About page 170 or a dedicated Hero page):
+  // hero_badge_text, hero_heading_line1, hero_heading_highlight, hero_heading_line2
+  // hero_subheading, hero_cta_label, hero_cta_url, hero_image (url)
+  // hero_trust_badges (repeater: icon, label, value)
+  // hero_stats_value, hero_stats_label
+  const { data } = useACFPage(WP_PAGE_IDS.ABOUT);
+
+  const badgeText: string = data?.hero_badge_text || "Available for Projects";
+  const headingLine1: string = data?.hero_heading_line1 || "Scaling Business with,";
+  const headingHighlight: string = data?.hero_heading_highlight || "AI Workflow,";
+  const headingLine2: string = data?.hero_heading_line2 || "Development & Marketing Growth";
+  const subheading: string = data?.hero_subheading || "Helping brands accelerate growth through AI-powered automation, high-performance development, and data-driven marketing strategies that deliver measurable results.";
+  const ctaLabel: string = data?.hero_cta_label || "Book a Free Consultation";
+  const ctaUrl: string = data?.hero_cta_url || "#contact";
+  const heroImage: string = data?.hero_image?.url || data?.hero_image || "/hero.png";
+  const statsValue: string = data?.hero_stats_value || "1,350+";
+  const statsLabel: string = data?.hero_stats_label || "Projects Delivered";
+
+  const trustBadges =
+    Array.isArray(data?.hero_trust_badges) && data.hero_trust_badges.length > 0
+      ? data.hero_trust_badges.map((b: any) => ({
+          icon: iconMap[b.icon?.toLowerCase()] || Star,
+          label: b.label,
+          value: b.value,
+        }))
+      : defaultBadges;
   return (
     <section className="relative min-h-screen flex items-center pt-24 pb-16 sm:pt-28 sm:pb-20 lg:pt-32 lg:pb-24 max-[350px]:pt-20 overflow-hidden bg-white">
       {/* Clean Professional Background - NineHertz Style */}
@@ -70,80 +103,55 @@ export function HeroSection() {
             
             {/* Enhanced Floating Badge with 3D Design */}
             <div className="group relative inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-full bg-primary/10 border-2 border-primary/30 backdrop-blur-xl shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:scale-105 hover:-translate-y-1 overflow-hidden">
-              {/* Animated Glow Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-cyan-500/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-gradient" style={{ backgroundSize: '200% 200%' }} />
-              
-              {/* Outer Glow Ring */}
               <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              {/* Content */}
               <div className="relative flex items-center gap-2 sm:gap-3">
                 <div className="relative">
                   <div className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-primary animate-pulse shadow-[0_0_12px_hsl(var(--primary))]" />
                   <div className="absolute inset-0 w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-primary animate-ping" />
                 </div>
                 <span className="text-xs sm:text-sm font-bold bg-gradient-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent animate-gradient drop-shadow-[0_0_10px_rgba(20,184,166,0.5)]" style={{ backgroundSize: '200% auto' }}>
-                  Available for Projects
+                  {badgeText}
                 </span>
                 <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_8px_rgba(20,184,166,0.4)]" />
               </div>
-
-              {/* Shine Effect */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1500 skew-x-12" />
               </div>
             </div>
 
-            {/* Main Headline - Exact Format */}
+            {/* Main Headline */}
             <div className="space-y-3 sm:space-y-4">
               <h1 className="font-heading text-2xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold leading-[1.15] max-[350px]:text-xl">
                 <span className="block text-foreground/90">
-                  Scaling Business with,{" "}
+                  {headingLine1}{" "}
                   <span className="relative inline-block">
                     <span className="absolute -inset-1 bg-gradient-to-r from-primary via-cyan-400 to-primary blur-xl opacity-0 animate-pulse" style={{ animationDuration: '3s' }} />
                     <span className="relative bg-gradient-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent animate-gradient" style={{ backgroundSize: '200% auto' }}>
-                      AI Workflow,
+                      {headingHighlight}
                     </span>
                   </span>
                 </span>
-                <span className="block mt-2 text-foreground/90">Development & Marketing Growth</span>
+                <span className="block mt-2 text-foreground/90">{headingLine2}</span>
               </h1>
             </div>
 
-            {/* Subheadline with Box Design */}
+            {/* Subheadline */}
             <div className="relative pl-4 sm:pl-6 border-l-2 sm:border-l-4 border-primary/50">
               <p className="text-base sm:text-lg lg:text-xl text-black max-w-xl leading-relaxed max-[350px]:text-sm font-medium">
-                Helping brands accelerate growth through AI-powered automation, 
-                high-performance development, and data-driven marketing strategies that deliver measurable results.
+                {subheading}
               </p>
             </div>
 
-            {/* CTA Buttons with Unique Style */}
+            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-6 w-full">
-              <Button 
-                variant="hero" 
-                size="xl" 
-                asChild
-                className="group relative overflow-hidden max-[350px]:text-sm shadow-2xl hover:shadow-primary/50"
-              >
-                <a href="#contact" className="relative z-10">
-                  <span className="relative z-10">Book a Free Consultation</span>
+              <Button variant="hero" size="xl" asChild className="group relative overflow-hidden max-[350px]:text-sm shadow-2xl hover:shadow-primary/50">
+                <a href={ctaUrl} className="relative z-10">
+                  <span className="relative z-10">{ctaLabel}</span>
                   <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform relative z-10" />
                   <div className="absolute inset-0 bg-gradient-to-r from-primary via-cyan-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
                 </a>
               </Button>
-              {/* View Portfolio button - hidden for now */}
-              {/* <Button 
-                variant="heroOutline" 
-                size="xl" 
-                asChild
-                className="group relative overflow-hidden max-[350px]:text-sm border-2 border-border hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <a href="#portfolio" className="flex items-center gap-2">
-                  <Briefcase className="relative w-5 h-5 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]" />
-                  <span className="relative z-10 group-hover:text-primary transition-colors">View Portfolio</span>
-                </a>
-              </Button> */}
             </div>
           </div>
 
@@ -163,7 +171,7 @@ export function HeroSection() {
               <div className="relative rounded-3xl overflow-hidden border-4 border-primary/10 shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-cyan-500/10" />
                 <img 
-                  src="/hero.png" 
+                  src={heroImage}
                   alt="Digital Growth Partner Illustration" 
                   className="relative z-10 w-full h-auto object-contain animate-float"
                   style={{ 
@@ -222,7 +230,7 @@ export function HeroSection() {
                 ))}
               </div>
 
-              {/* Floating Stats Card - Repositioned */}
+              {/* Floating Stats Card */}
               <div className="absolute -top-8 -left-8 bg-card/90 backdrop-blur-xl border-2 border-border rounded-2xl p-4 shadow-2xl animate-float hidden xl:block" style={{ animationDuration: '4s', animationDelay: '1s' }}>
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -232,8 +240,8 @@ export function HeroSection() {
                     </div>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-foreground">1,350+</p>
-                    <p className="text-xs text-muted-foreground">Projects Delivered</p>
+                    <p className="text-2xl font-bold text-foreground">{statsValue}</p>
+                    <p className="text-xs text-muted-foreground">{statsLabel}</p>
                   </div>
                 </div>
               </div>
