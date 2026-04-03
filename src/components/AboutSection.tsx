@@ -1,89 +1,142 @@
 import { Button } from "@/components/ui/button";
-import { Rocket, Gauge, Boxes, BadgeInfo, TrendingUp, Users, Zap, ArrowRight, Sparkles, MessageSquare } from "lucide-react";
+import {
+  Rocket, Gauge, Boxes, BadgeInfo,
+  TrendingUp, Users, Zap,
+  ArrowRight, Sparkles, MessageSquare,
+} from "lucide-react";
 import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
 
-// Fallback feature icons & colors
 const featureIcons = [Rocket, Gauge, Boxes];
-const featureColors = ["from-blue-500 to-cyan-500", "from-purple-500 to-pink-500", "from-orange-500 to-red-500"];
-
-const defaultFeatures = [
-  { title: "AI-First Approach", description: "Leveraging AI-powered workflows, automation, and intelligent systems to streamline operations, reduce manual effort, and accelerate business growth." },
-  { title: "ROI-Focused", description: "Every solution is built with a clear focus on performance, ensuring measurable impact, higher conversions, and maximum return on investment." },
-  { title: "End-to-End Execution", description: "From strategy and UX to development, automation, and growth—complete ownership to ensure seamless execution and consistent results." },
-];
-
-const defaultStats = [
-  { value: "1,350+", label: "Projects" },
-  { value: "10+", label: "Years Experience" },
-  { value: "Trusted", label: "by Brands" },
+const featureColors = [
+  "from-blue-500 to-cyan-500",
+  "from-purple-500 to-pink-500",
+  "from-orange-500 to-red-500",
 ];
 const statIcons = [TrendingUp, Users, Zap];
-const statColors = ["from-blue-500 to-cyan-500", "from-purple-500 to-pink-500", "from-orange-500 to-red-500"];
-
-const defaultIndustries = ["Retail & Ecommerce", "SaaS Platforms", "D2C", "B2B", "Startups", "Agencies", "Healthcare"];
+const statColors = [
+  "from-blue-500 to-cyan-500",
+  "from-purple-500 to-pink-500",
+  "from-orange-500 to-red-500",
+];
 
 export function AboutSection() {
   const { data } = useWPPage(WP_PAGE_IDS.INDEX);
 
-  // ── ACF field names (from "Indexpage About Section" field group) ──
-  // top_badge6        → section badge text
-  // main_heading6     → heading left part
-  // highlight_text6   → heading highlighted word
-  // description_1     → paragraph 1 (textarea)
-  // description_2     → paragraph 2 (textarea)
-  // trusted_across_diverse_industries       → label above industry tags
-  // trusted_across_diverse_industries_icon  → icon image (WP image object)
-  // tags[].tag_name   → industry tag chips (repeater)
-  // features[].icon   → feature icon (WP image object)
-  // features[].text   → feature title (NOTE: ACF uses "text" not "title")
-  // stats             → false (not yet filled — using defaults)
-  // hire_me_on_upwork_icon → primary CTA icon (WP image)
-  // cta_primary       → primary button label
-  // hire_me_on_upwork_link → primary button URL
-  // lets_connect_icon → secondary CTA icon (WP image)
-  // cta_secondary     → secondary button label
-  // lets_connect_link → secondary button URL
-
-  // Fall back to top_badge4 if top_badge6 is empty (old field group)
-  const badge: string = data?.top_badge6 || data?.top_badge4 || "ABOUT ME";
-  const headingMain: string = data?.main_heading6 || data?.main_heading4 || "Transforming Business with";
-  const headingHighlight: string = data?.highlight_text6 || data?.highlight_text4 || "Modern Digital Era";
+  // ── TEXT FIELDS ──────────────────────────────────────────────────────────
+  // Try new field group names first (top_badge6 etc.), fall back to old ones
+  const badge: string =
+    data?.top_badge6 || data?.top_badge4 || "ABOUT ME";
+  const headingMain: string =
+    data?.main_heading6 || data?.main_heading4 || "Transforming Business with";
+  const headingHighlight: string =
+    data?.highlight_text6 || data?.highlight_text4 || "Modern Digital Era";
   const para1: string = data?.description_1 || "";
   const para2: string = data?.description_2 || "";
-  const industriesLabel: string = data?.trusted_across_diverse_industries || "Trusted Across Diverse Industries";
-  const industriesIconUrl: string | null = data?.trusted_across_diverse_industries_icon?.url || null;
 
+  // ── INDUSTRIES REPEATER ──────────────────────────────────────────────────
+  // New field: industries_tags1[].tag_name
+  // Old field: tags[].tag_name
+  const industriesLabel: string =
+    data?.trusted_across_diverse_industries || "Trusted Across Diverse Industries";
+  const industriesIconUrl: string | null =
+    data?.trusted_across_diverse_industries_icon?.url || null;
+
+  const industries: string[] = (() => {
+    // Try new repeater first
+    const newTags = data?.industries_tags1;
+    if (Array.isArray(newTags) && newTags.some((t: any) => t.tag_name?.trim())) {
+      return newTags.filter((t: any) => t.tag_name?.trim()).map((t: any) => t.tag_name.trim());
+    }
+    // Fall back to old repeater
+    const oldTags = data?.tags;
+    if (Array.isArray(oldTags) && oldTags.some((t: any) => t.tag_name?.trim())) {
+      return oldTags.filter((t: any) => t.tag_name?.trim()).map((t: any) => t.tag_name.trim());
+    }
+    return ["Retail & Ecommerce", "SaaS Platforms", "D2C", "B2B", "Startups", "Agencies", "Healthcare"];
+  })();
+
+  // ── FEATURES REPEATER ────────────────────────────────────────────────────
+  // Repeater field name: right_features
+  // Sub-fields: feature_title1 (Text), feature_description1 (Text Area), features_icon1 (Image)
+  const features = (() => {
+    // Try new repeater: right_features
+    const newRaw = data?.right_features;
+    if (Array.isArray(newRaw) && newRaw.some((f: any) => f.feature_title1?.trim())) {
+      return newRaw.filter((f: any) => f.feature_title1?.trim()).map((f: any, i: number) => ({
+        title: f.feature_title1.trim(),
+        description: f.feature_description1?.trim() || "",
+        iconUrl: f.features_icon1?.url || null,
+        color: featureColors[i % featureColors.length],
+        FallbackIcon: featureIcons[i % featureIcons.length],
+      }));
+    }
+
+    // Fallback: old "features" repeater with sub-fields title/description/features_icon
+    const oldRaw = data?.features;
+    if (Array.isArray(oldRaw)) {
+      const withTitle = oldRaw.filter((f: any) => f.title?.trim());
+      if (withTitle.length > 0) {
+        return withTitle.map((f: any, i: number) => ({
+          title: f.title.trim(),
+          description: f.description?.trim() || "",
+          iconUrl: f.features_icon?.url || null,
+          color: featureColors[i % featureColors.length],
+          FallbackIcon: featureIcons[i % featureIcons.length],
+        }));
+      }
+      // Even older: text + icon sub-fields
+      const withText = oldRaw.filter((f: any) => f.text?.trim());
+      if (withText.length > 0) {
+        return withText.map((f: any, i: number) => ({
+          title: f.text.trim(),
+          description: "",
+          iconUrl: f.icon?.url || null,
+          color: featureColors[i % featureColors.length],
+          FallbackIcon: featureIcons[i % featureIcons.length],
+        }));
+      }
+    }
+
+    return null; // use static defaults
+  })();
+
+  const displayFeatures = features ?? [
+    { title: "AI-First Approach", description: "Leveraging AI-powered workflows, automation, and intelligent systems to streamline operations, reduce manual effort, and accelerate business growth.", iconUrl: null, color: "from-blue-500 to-cyan-500", FallbackIcon: Rocket },
+    { title: "ROI-Focused", description: "Every solution is built with a clear focus on performance, ensuring measurable impact, higher conversions, and maximum return on investment.", iconUrl: null, color: "from-purple-500 to-pink-500", FallbackIcon: Gauge },
+    { title: "End-to-End Execution", description: "From strategy and UX to development, automation, and growth—complete ownership to ensure seamless execution and consistent results.", iconUrl: null, color: "from-orange-500 to-red-500", FallbackIcon: Boxes },
+  ];
+
+  // ── STATS REPEATER ───────────────────────────────────────────────────────
+  // New field: stats_2[].stats_image1 (Image), stats_2[].value1 (Text), stats_2[].labe_1 (Text)
+  // Old field: stats = false
+  const stats = (() => {
+    const raw = data?.stats_2;
+    if (Array.isArray(raw) && raw.some((s: any) => s.value1?.trim())) {
+      return raw.filter((s: any) => s.value1?.trim()).map((s: any, i: number) => ({
+        value: s.value1.trim(),
+        label: s.labe_1?.trim() || "",
+        iconUrl: s.stats_image1?.url || null,
+        IconComponent: statIcons[i % statIcons.length],
+        color: statColors[i % statColors.length],
+      }));
+    }
+    return [
+      { value: "1,350+", label: "Projects", iconUrl: null, IconComponent: TrendingUp, color: "from-blue-500 to-cyan-500" },
+      { value: "10+", label: "Years Experience", iconUrl: null, IconComponent: Users, color: "from-purple-500 to-pink-500" },
+      { value: "Trusted", label: "by Brands", iconUrl: null, IconComponent: Zap, color: "from-orange-500 to-red-500" },
+    ];
+  })();
+
+  // ── CTA BUTTONS ──────────────────────────────────────────────────────────
   const ctaPrimaryLabel: string = data?.cta_primary || "Hire Me on Upwork";
-  const ctaPrimaryUrl: string = data?.hire_me_on_upwork_link || "https://www.upwork.com/freelancers/bharatgunani";
+  const ctaPrimaryUrl: string =
+    data?.hire_me_on_upwork_link || "https://www.upwork.com/freelancers/bharatgunani";
   const ctaPrimaryIconUrl: string | null = data?.hire_me_on_upwork?.url || null;
 
   const ctaSecondaryLabel: string = data?.cta_secondary || "Let's Connect";
-  const ctaSecondaryUrl: string = data?.lets_connect_link || "#contact";
+  const ctaSecondaryUrl: string =
+    data?.lets_connect_link?.replace("http://localhost:8080", "") || "#contact";
   const ctaSecondaryIconUrl: string | null = data?.lets_connect_icon?.url || null;
-
-  // Industries — tags[].tag_name repeater
-  const industries: string[] = (() => {
-    if (!Array.isArray(data?.tags)) return defaultIndustries;
-    const filled = data.tags.filter((t: any) => t.tag_name?.trim());
-    return filled.length > 0 ? filled.map((t: any) => t.tag_name.trim()) : defaultIndustries;
-  })();
-
-  // Features — features[].icon (WP image) + features[].text (title)
-  // ACF "features" repeater sub-fields: icon (Image), text (Text)
-  const features = (() => {
-    if (!Array.isArray(data?.features)) return defaultFeatures.map((f, i) => ({ ...f, iconUrl: null, color: featureColors[i] }));
-    const filled = data.features.filter((f: any) => f.text?.trim());
-    if (filled.length === 0) return defaultFeatures.map((f, i) => ({ ...f, iconUrl: null, color: featureColors[i] }));
-    return filled.map((f: any, i: number) => ({
-      title: f.text.trim(),
-      description: f.description?.trim() || "",
-      iconUrl: f.icon?.url || null,
-      color: featureColors[i % featureColors.length],
-    }));
-  })();
-
-  // Stats — stats is false in API; use defaults
-  const stats = defaultStats.map((s, i) => ({ ...s, IconComponent: statIcons[i], color: statColors[i] }));
 
   return (
     <section id="about" className="py-10 sm:py-12 lg:py-16 bg-slate-100 relative overflow-hidden">
@@ -95,7 +148,7 @@ export function AboutSection() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        {/* Badge */}
+        {/* ── BADGE ── */}
         <div className="text-center mb-12 sm:mb-16 lg:mb-20">
           <div className="group relative inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-full bg-primary/10 border-2 border-primary/30 backdrop-blur-xl mb-6 sm:mb-8 shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:scale-105 hover:-translate-y-1 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-cyan-500/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -104,7 +157,9 @@ export function AboutSection() {
                 <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
                 <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-primary animate-ping" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-primary uppercase tracking-[0.15em] sm:tracking-[0.2em]">{badge}</span>
+              <span className="text-xs sm:text-sm font-bold text-primary uppercase tracking-[0.15em] sm:tracking-[0.2em]">
+                {badge}
+              </span>
               <BadgeInfo className="w-4 sm:w-5 h-4 sm:h-5 text-primary group-hover:rotate-12 transition-transform" />
             </div>
           </div>
@@ -112,7 +167,7 @@ export function AboutSection() {
 
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-start max-w-7xl mx-auto">
 
-          {/* ── LEFT COLUMN ── */}
+          {/* ── LEFT ── */}
           <div className="space-y-6 sm:space-y-8 animate-fade-in-up">
 
             {/* Heading */}
@@ -144,11 +199,10 @@ export function AboutSection() {
             {/* Industries */}
             <div>
               <p className="text-sm font-bold text-muted-foreground mb-5 uppercase tracking-wider flex items-center gap-2">
-                {industriesIconUrl ? (
-                  <img src={industriesIconUrl} alt="" className="w-4 h-4 object-contain" />
-                ) : (
-                  <Sparkles className="w-4 h-4 text-primary" />
-                )}
+                {industriesIconUrl
+                  ? <img src={industriesIconUrl} alt="" className="w-4 h-4 object-contain" />
+                  : <Sparkles className="w-4 h-4 text-primary" />
+                }
                 {industriesLabel}
               </p>
               <div className="flex flex-wrap gap-3">
@@ -167,25 +221,31 @@ export function AboutSection() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
-              <Button className="h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base shadow-2xl hover:shadow-primary/50 group relative overflow-hidden" asChild>
+              <Button
+                className="h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base shadow-2xl hover:shadow-primary/50 group relative overflow-hidden"
+                asChild
+              >
                 <a href={ctaPrimaryUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                  {ctaPrimaryIconUrl ? (
+                  {ctaPrimaryIconUrl && (
                     <img src={ctaPrimaryIconUrl} alt="" className="w-5 h-5 object-contain relative z-10" />
-                  ) : null}
+                  )}
                   <span className="relative z-10">{ctaPrimaryLabel}</span>
                   <ArrowRight className="ml-1 group-hover:translate-x-1 transition-transform relative z-10" />
                   <div className="absolute inset-0 bg-gradient-to-r from-primary via-cyan-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
                 </a>
               </Button>
 
-              <Button variant="outline" className="group relative h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base border-2 border-border hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden shadow-lg hover:shadow-xl" asChild>
+              <Button
+                variant="outline"
+                className="group relative h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base border-2 border-border hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden shadow-lg hover:shadow-xl"
+                asChild
+              >
                 <a href={ctaSecondaryUrl} className="flex items-center gap-2">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {ctaSecondaryIconUrl ? (
-                    <img src={ctaSecondaryIconUrl} alt="" className="relative w-5 h-5 object-contain" />
-                  ) : (
-                    <MessageSquare className="relative w-5 h-5 text-primary group-hover:rotate-12 transition-transform" />
-                  )}
+                  {ctaSecondaryIconUrl
+                    ? <img src={ctaSecondaryIconUrl} alt="" className="relative w-5 h-5 object-contain" />
+                    : <MessageSquare className="relative w-5 h-5 text-primary group-hover:rotate-12 transition-transform" />
+                  }
                   <span className="relative z-10 group-hover:text-primary transition-colors">{ctaSecondaryLabel}</span>
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </a>
@@ -193,38 +253,35 @@ export function AboutSection() {
             </div>
           </div>
 
-          {/* ── RIGHT COLUMN ── */}
+          {/* ── RIGHT ── */}
           <div className="space-y-6 sm:space-y-8 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
 
             {/* Feature Cards */}
-            {features.map((f, idx) => (
+            {displayFeatures.map((f, idx) => (
               <div key={idx} className="group relative">
                 <div className="relative p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border-2 border-border hover:border-primary/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl overflow-hidden">
                   <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
 
                   <div className="flex items-start gap-4 sm:gap-6 relative z-10">
-                    {/* Icon */}
+                    {/* Icon box */}
                     <div className="relative flex-shrink-0">
                       <div className={`absolute inset-0 bg-gradient-to-br ${f.color} rounded-xl sm:rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
                       <div className={`relative w-16 sm:w-20 h-16 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-2xl overflow-hidden`}>
-                        {f.iconUrl ? (
-                          <img src={f.iconUrl} alt={f.title} className="w-8 sm:w-10 h-8 sm:h-10 object-contain" />
-                        ) : (
-                          (() => {
-                            const Icon = featureIcons[idx % featureIcons.length];
-                            return <Icon className="w-8 sm:w-10 h-8 sm:h-10 text-white drop-shadow-lg" />;
-                          })()
-                        )}
+                        {f.iconUrl
+                          ? <img src={f.iconUrl} alt={f.title} className="w-8 sm:w-10 h-8 sm:h-10 object-contain" />
+                          : <f.FallbackIcon className="w-8 sm:w-10 h-8 sm:h-10 text-white drop-shadow-lg" />
+                        }
                       </div>
-                      {/* Orbiting dot */}
                       <div className="absolute inset-0 animate-spin" style={{ animationDuration: "6s" }}>
                         <div className="absolute top-0 left-1/2 w-1.5 sm:w-2 h-1.5 sm:h-2 bg-primary rounded-full -translate-x-1/2 shadow-lg shadow-primary/50" />
                       </div>
                     </div>
 
                     <div className="flex-1 pt-1 sm:pt-2">
-                      <h4 className="font-heading text-xl sm:text-2xl font-bold mb-2 sm:mb-3 group-hover:text-primary transition-colors">{f.title}</h4>
+                      <h4 className="font-heading text-xl sm:text-2xl font-bold mb-2 sm:mb-3 group-hover:text-primary transition-colors">
+                        {f.title}
+                      </h4>
                       {f.description && (
                         <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{f.description}</p>
                       )}
@@ -246,16 +303,22 @@ export function AboutSection() {
                   <div className="relative p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-card to-secondary/30 border-2 border-border hover:border-primary/30 transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl text-center overflow-hidden">
                     <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
                     <div className="relative z-10 space-y-2 sm:space-y-3">
+                      {/* Icon */}
                       <div className="relative mx-auto w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16">
                         <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} rounded-xl sm:rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity`} />
-                        <div className={`relative w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 mx-auto rounded-xl sm:rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-xl`}>
-                          <stat.IconComponent className="w-6 sm:w-7 lg:w-8 h-6 sm:h-7 lg:h-8 text-white" />
+                        <div className={`relative w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 mx-auto rounded-xl sm:rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-xl overflow-hidden`}>
+                          {stat.iconUrl
+                            ? <img src={stat.iconUrl} alt={stat.label} className="w-6 sm:w-7 lg:w-8 h-6 sm:h-7 lg:h-8 object-contain" />
+                            : <stat.IconComponent className="w-6 sm:w-7 lg:w-8 h-6 sm:h-7 lg:h-8 text-white" />
+                          }
                         </div>
                       </div>
                       <div className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 inline-block">
                         {stat.value}
                       </div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-bold">{stat.label}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-bold">
+                        {stat.label}
+                      </div>
                     </div>
                     <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                   </div>
