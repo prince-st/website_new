@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Sparkles } from "lucide-react";
-import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
+import { useWPPage, WP_PAGE_IDS, getImageUrl } from "@/hooks/useWordPressData";
 
 export function HeroSection() {
   const { data } = useWPPage(WP_PAGE_IDS.INDEX);
@@ -20,7 +20,7 @@ export function HeroSection() {
   const subheading: string = data?.description || "Helping brands accelerate growth through AI-powered automation, high-performance development, and data-driven marketing strategies that deliver measurable results.";
   const ctaText: string = data?.cta?.text || "Book a Free Consultation";
   const ctaLink: string = data?.cta?.link?.replace("http://localhost:8080", "") || "#contact";
-  const heroImage: string = data?.hero_image?.url || "/hero.png";
+  const heroImage: string = getImageUrl(data?.hero_image) || "/hero.png";
   const statValue: string = data?.floating_stat?.value || "1,350+";
   const statLabel: string = data?.floating_stat?.label || "Projects Delivered";
 

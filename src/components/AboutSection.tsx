@@ -4,7 +4,7 @@ import {
   TrendingUp, Users, Zap,
   ArrowRight, Sparkles, MessageSquare,
 } from "lucide-react";
-import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
+import { useWPPage, WP_PAGE_IDS, getImageUrl } from "@/hooks/useWordPressData";
 
 const featureIcons = [Rocket, Gauge, Boxes];
 const featureColors = [
@@ -39,7 +39,7 @@ export function AboutSection() {
   const industriesLabel: string =
     data?.trusted_across_diverse_industries || "Trusted Across Diverse Industries";
   const industriesIconUrl: string | null =
-    data?.trusted_across_diverse_industries_icon?.url || null;
+    getImageUrl(data?.trusted_across_diverse_industries_icon);
 
   const industries: string[] = (() => {
     // Try new repeater first
@@ -65,7 +65,7 @@ export function AboutSection() {
       return newRaw.filter((f: any) => f.feature_title1?.trim()).map((f: any, i: number) => ({
         title: f.feature_title1.trim(),
         description: f.feature_description1?.trim() || "",
-        iconUrl: f.features_icon1?.url || null,
+        iconUrl: getImageUrl(f.features_icon1),
         color: featureColors[i % featureColors.length],
         FallbackIcon: featureIcons[i % featureIcons.length],
       }));
