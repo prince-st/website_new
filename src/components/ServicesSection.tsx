@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Monitor, Bot, Sparkles, Globe, ShoppingCart, Database, Search, Target, Share2, Code2, Smartphone, Palette, LucideIcon } from "lucide-react";
-import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
+import { useWPPage, WP_PAGE_IDS, getImageUrl } from "@/hooks/useWordPressData";
 
 // Fallback icon map by service title keyword
 const titleIconMap: Record<string, LucideIcon> = {

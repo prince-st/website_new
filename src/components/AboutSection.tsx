@@ -79,7 +79,7 @@ export function AboutSection() {
         return withTitle.map((f: any, i: number) => ({
           title: f.title.trim(),
           description: f.description?.trim() || "",
-          iconUrl: f.features_icon?.url || null,
+          iconUrl: getImageUrl(f.features_icon),
           color: featureColors[i % featureColors.length],
           FallbackIcon: featureIcons[i % featureIcons.length],
         }));
@@ -90,7 +90,7 @@ export function AboutSection() {
         return withText.map((f: any, i: number) => ({
           title: f.text.trim(),
           description: "",
-          iconUrl: f.icon?.url || null,
+          iconUrl: getImageUrl(f.icon),
           color: featureColors[i % featureColors.length],
           FallbackIcon: featureIcons[i % featureIcons.length],
         }));
@@ -115,7 +115,7 @@ export function AboutSection() {
       return raw.filter((s: any) => s.value1?.trim()).map((s: any, i: number) => ({
         value: s.value1.trim(),
         label: s.labe_1?.trim() || "",
-        iconUrl: s.stats_image1?.url || null,
+        iconUrl: getImageUrl(s.stats_image1),
         IconComponent: statIcons[i % statIcons.length],
         color: statColors[i % statColors.length],
       }));
@@ -131,12 +131,12 @@ export function AboutSection() {
   const ctaPrimaryLabel: string = data?.cta_primary || "Hire Me on Upwork";
   const ctaPrimaryUrl: string =
     data?.hire_me_on_upwork_link || "https://www.upwork.com/freelancers/bharatgunani";
-  const ctaPrimaryIconUrl: string | null = data?.hire_me_on_upwork?.url || null;
+  const ctaPrimaryIconUrl: string | null = getImageUrl(data?.hire_me_on_upwork);
 
   const ctaSecondaryLabel: string = data?.cta_secondary || "Let's Connect";
   const ctaSecondaryUrl: string =
     data?.lets_connect_link?.replace("http://localhost:8080", "") || "#contact";
-  const ctaSecondaryIconUrl: string | null = data?.lets_connect_icon?.url || null;
+  const ctaSecondaryIconUrl: string | null = getImageUrl(data?.lets_connect_icon);
 
   return (
     <section id="about" className="py-10 sm:py-12 lg:py-16 bg-slate-100 relative overflow-hidden">

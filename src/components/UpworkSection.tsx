@@ -1,6 +1,6 @@
 import { ExternalLink, Award, CheckCircle2, Star, TrendingUp, Clock, Sparkles, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
+import { useWPPage, WP_PAGE_IDS, getImageUrl } from "@/hooks/useWordPressData";
 
 const statIcons: LucideIcon[] = [TrendingUp, CheckCircle2, Clock];
 const statColors = ["from-green-500 to-emerald-500", "from-blue-500 to-cyan-500", "from-purple-500 to-pink-500"];
@@ -26,7 +26,7 @@ export function UpworkSection() {
   const ctaLink: string = data?.cta_button?.link || "https://www.upwork.com/freelancers/bharatgunani";
 
   const profile = data?.profile || {};
-  const profileImage: string = profile.image?.url || "/profile.webp";
+  const profileImage: string = getImageUrl(profile.image) || "/profile.webp";
   const profileName: string = profile.name || "Bharat G.";
   const profileLocation: string = profile.location || "Gandhinagar, India • Local time";
   const profileRole: string = profile.role || "Senior AI Architect";

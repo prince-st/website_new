@@ -1,4 +1,4 @@
-import { useState } from "react";
+  https://dev-reactwebsite.pantheonsite.io/wp-json/wp/v2/pages/170import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,17 +94,22 @@ export function ContactSection() {
         { label: "Availability", value: "Mon - Sat, 9AM - 6PM", iconUrl: null, bgColor: "", FallbackIcon: Clock },
       ];
 
-  // Social links repeater
-  const rawSocials = Array.isArray(data?.contact_social_group) && data.contact_social_group.some((s: any) => s.social_link_url?.trim())
-    ? data.contact_social_group.filter((s: any) => s.social_link_url?.trim())
-    : null;
+  // Social links repeater — contact_social_group
+  // Sub-fields: social_icon_icon_1 (Image), social_title_text (Text),
+  //             social_display_text (Text), social_link_url (URL), social_icon_icon_2 (Image)
+  const rawSocials = Array.isArray(data?.contact_social_group)
+    ? data.contact_social_group.filter((s: any) => s.social_link_url?.trim() || s.social_title_text?.trim())
+    : [];
 
-  const socialLinks = rawSocials
+  const socialLinks = rawSocials.length > 0
     ? rawSocials.map((s: any) => ({
         label: s.social_title_text?.trim() || "Link",
-        value: s.social_display_text?.trim() || s.social_link_url,
-        href: s.social_link_url,
-        iconUrl: s.social_icon_icon_1?.url || s.social_icon_icon_2?.url || null,
+        value: s.social_display_text?.trim() || s.social_link_url?.trim() || "",
+        href: s.social_link_url?.trim() || "#",
+        // Use icon_1 first, fall back to icon_2
+        iconUrl: (s.social_icon_icon_1 && s.social_icon_icon_1 !== false ? s.social_icon_icon_1?.url : null)
+               || (s.social_icon_icon_2 && s.social_icon_icon_2 !== false ? s.social_icon_icon_2?.url : null)
+               || null,
       }))
     : [
         { label: "Email", value: "bharat@storetransform.com", href: "mailto:bharat@storetransform.com", iconUrl: null },
