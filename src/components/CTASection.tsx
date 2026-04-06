@@ -32,7 +32,7 @@ export function CTASection() {
         text: b.text.trim(),
         link: b.link?.trim() || "",
         style: b.style || "primary",
-        iconUrl: b.icon_1?.url || null,
+        iconUrl: getImageUrl(b.icon_1),
       }))
     : [
         { text: "Schedule a Call", link: "https://calendly.com/piyushewebxpert/30min", style: "primary", iconUrl: null },
@@ -46,7 +46,7 @@ export function CTASection() {
 
   const bottomFeatures = rawFeatures
     ? rawFeatures.map((f: any) => ({
-        iconUrl: f.icon?.url || null,
+        iconUrl: getImageUrl(f.icon),
         text: f.text.trim(),
       }))
     : [
