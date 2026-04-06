@@ -121,7 +121,7 @@ export function ContactSection() {
   const quickGroup = data?.quick_response_group || {};
   const quickTitle: string = quickGroup.quick_title_text || "Quick Response";
   const quickDesc: string = quickGroup.quick_desc_text?.replace(/\r\n/g, " ").trim() || "I typically respond within 24 hours. For urgent projects, mention \"URGENT\" in your message subject.";
-  const quickIconUrl: string | null = quickGroup.quick_icon_image?.url || null;
+  const quickIconUrl: string | null = getImageUrl(quickGroup.quick_icon_image);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
