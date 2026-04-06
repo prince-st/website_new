@@ -49,7 +49,7 @@ export function ServicesSection() {
 
   const rawServices = Array.isArray(data?.services) && data.services.length > 0 ? data.services : [];
   const services = rawServices.map((s: any, i: number) => ({
-    iconUrl: s.icon?.url || null,
+    iconUrl: getImageUrl(s.icon),
     IconComponent: getIconForTitle(s.title || ""),
     title: s.title || "",
     description: s.desc || "",
