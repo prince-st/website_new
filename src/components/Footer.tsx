@@ -49,7 +49,7 @@ export function Footer() {
       ? data.footer_socials_list
           .filter((s: any) => s.footer_social_link_url)
           .map((s: any) => ({
-            iconUrl: s.social_icon?.url || null,
+            iconUrl: getImageUrl(s.social_icon),
             href: s.footer_social_link_url,
           }))
       : null;
