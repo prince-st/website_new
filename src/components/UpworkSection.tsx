@@ -47,7 +47,7 @@ export function UpworkSection() {
   const statsInfo =
     Array.isArray(data?.stats_info) && data.stats_info.length > 0
       ? data.stats_info.map((s: any, i: number) => ({
-          iconUrl: s.icon?.url || null,
+          iconUrl: getImageUrl(s.icon),
           IconComponent: statIcons[i % statIcons.length],
           value: s.value_info,
           label: s.stats_info,

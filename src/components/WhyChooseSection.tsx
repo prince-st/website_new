@@ -1,5 +1,5 @@
 import { BarChart3, Layers, MessageSquare, Clock, Handshake, Globe2, Sparkles, TrendingUp, Users, Zap, LucideIcon } from "lucide-react";
-import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
+import { useWPPage, WP_PAGE_IDS, getImageUrl } from "@/hooks/useWordPressData";
 
 const cardIcons: LucideIcon[] = [BarChart3, Layers, MessageSquare, Clock, Handshake, Globe2];
 const cardColors = [
@@ -41,7 +41,7 @@ export function WhyChooseSection() {
 
   const cards = rawCards
     ? rawCards.map((c: any, i: number) => ({
-        iconUrl: c.icon?.url || null,
+        iconUrl: getImageUrl(c.icon),
         IconComponent: cardIcons[i % cardIcons.length],
         title: c.title.trim(),
         description: c.desc?.replace(/\r\n/g, " ").trim() || "",

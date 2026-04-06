@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Linkedin, ExternalLink, Send, MapPin, Phone, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useWPPage, WP_PAGE_IDS } from "@/hooks/useWordPressData";
+import { useWPPage, WP_PAGE_IDS, getImageUrl } from "@/hooks/useWordPressData";
 
 // Fallback icons for contact details by index
 const detailIcons = [MapPin, Phone, Clock];
@@ -65,9 +65,9 @@ export function ContactSection() {
   // Form group
   const formGroup = data?.contact_form_group || {};
   const formTitle: string = formGroup.form_title_text || "Send a Message";
-  const formIconUrl: string | null = formGroup.form_icon_image?.url || null;
+  const formIconUrl: string | null = getImageUrl(formGroup.form_icon_image);
   const submitBtnText: string = formGroup.form_button_text || "Send Message";
-  const submitBtnIconUrl: string | null = formGroup.button_image?.url || null;
+  const submitBtnIconUrl: string | null = getImageUrl(formGroup.button_image);
   const nameLabelText: string = formGroup.your_name || "Your Name";
   const namePlaceholder: string = formGroup.john_doe || "John Doe";
   const emailLabel: string = data?.email_address || "Email Address";
@@ -84,7 +84,7 @@ export function ContactSection() {
     ? rawDetails.map((d: any, i: number) => ({
         label: d.detail_label_text.trim(),
         value: d.detail_value_text?.trim() || "",
-        iconUrl: d.detail_icon_image?.url || null,
+        iconUrl: getImageUrl(d.detail_icon_image),
         bgColor: d.detail_icon_bg_color || "",
         FallbackIcon: detailIcons[i % detailIcons.length],
       }))
