@@ -106,10 +106,7 @@ export function ContactSection() {
         label: s.social_title_text?.trim() || "Link",
         value: s.social_display_text?.trim() || s.social_link_url?.trim() || "",
         href: s.social_link_url?.trim() || "#",
-        // Use icon_1 first, fall back to icon_2
-        iconUrl: (s.social_icon_icon_1 && s.social_icon_icon_1 !== false ? s.social_icon_icon_1?.url : null)
-               || (s.social_icon_icon_2 && s.social_icon_icon_2 !== false ? s.social_icon_icon_2?.url : null)
-               || null,
+        iconUrl: getImageUrl(s.social_icon_icon_1) || getImageUrl(s.social_icon_icon_2),
       }))
     : [
         { label: "Email", value: "bharat@storetransform.com", href: "mailto:bharat@storetransform.com", iconUrl: null },
