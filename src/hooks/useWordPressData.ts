@@ -11,50 +11,73 @@ export const WP_PAGE_IDS = {
 /**
  * Safely extract image URL from ANY ACF image field format.
  *
- * ACF with acf_format=standard can return:
- *   false                          → not set / empty
- *   { url, sizes, alt, ... }       → full WP image object (most common)
- *   { url }                        → minimal image object
- *   "https://..."                  → direct URL string
- *   { ID, url, ... }               → image with ID
- *   { sizes: { thumbnail, medium, large, full } } → with sizes
+ * ACF with acf_format=standard returns one of:
+ *   false / null / undefined  → not set
+ *   { url, sizes, alt, ... }  → full WP attachment object  ← most common
+ *   { ID, url, ... }          → attachment with ID
+ *   "https://..."             → direct URL string
+ *   number (attachment ID)    → just the ID (rare, needs separate fetch)
+ *
+ * @param field  - The raw ACF field value
+ * @param size   - Image size to prefer: "full" | "large" | "medium" | "thumbnail"
  */
-export function getImageUrl(field: any, size: "full" | "large" | "medium" | "thumbnail" = "full"): string | null {
-  if (!field || field === false || field === null || field === undefined) return null;
+export function getImageUrl(
+  field: any,
+  size: "full" | "large" | "medium" | "thumbnail" = "full"
+): string | null {
+  // Empty / not set
+  if (field === false || field === null || field === undefined || field === "") {
+    return null;
+  }
 
-  // Direct string URL
+  // Direct URL string
   if (typeof field === "string") {
     return field.startsWith("http") ? field : null;
   }
 
-  // Object with url property (standard ACF image object)
+  // Number = attachment ID only (acf_format=standard should prevent this, but just in case)
+  if (typeof field === "number") {
+    // Can't resolve without an extra API call — return null, fallback icon will show
+    return null;
+  }
+
+  // Object (standard ACF image object)
   if (typeof field === "object") {
-    // Try requested size first
-    if (size !== "full" && field.sizes?.[size]) return field.sizes[size];
-    // Fall back to full url
-    if (field.url) return field.url;
-    // Try sizes.full
-    if (field.sizes?.full) return field.sizes.full;
-    // Try guid (WordPress attachment URL)
-    if (field.guid) return field.guid;
+    // Try requested size from sizes object
+    if (size !== "full" && field.sizes) {
+      const sizeUrl = field.sizes[size] || field.sizes[`${size}-width`];
+      if (sizeUrl && typeof sizeUrl === "string") return sizeUrl;
+    }
+
+    // Primary: direct url property
+    if (field.url && typeof field.url === "string") return field.url;
+
+    // Fallback: sizes.full
+    if (field.sizes?.full && typeof field.sizes.full === "string") return field.sizes.full;
+
+    // Fallback: guid (raw WP attachment URL)
+    if (field.guid && typeof field.guid === "string") return field.guid;
+
+    // Fallback: source_url (REST API format)
+    if (field.source_url && typeof field.source_url === "string") return field.source_url;
   }
 
   return null;
 }
 
 /**
- * Get image alt text from ACF image field.
+ * Get alt text from ACF image field.
  */
 export function getImageAlt(field: any, fallback = ""): string {
   if (!field || field === false) return fallback;
   if (typeof field === "object") {
-    return field.alt || field.title || fallback;
+    return field.alt || field.title || field.caption || fallback;
   }
   return fallback;
 }
 
 /**
- * Check if an ACF image field has a valid image.
+ * Returns true if the field has a usable image URL.
  */
 export function hasImage(field: any): boolean {
   return getImageUrl(field) !== null;
@@ -66,7 +89,6 @@ export function useWPPage(pageId: number) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Timestamp busts any server/CDN cache so ACF changes show immediately
     const url = `${WP_BASE}/wp/v2/pages/${pageId}?acf_format=standard&_fields=acf&_=${Date.now()}`;
 
     fetch(url, { cache: "no-store" })
